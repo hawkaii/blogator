@@ -1,11 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+
 	"log"
+	"os"
 
 	"github.com/hawkaii/blogator/internal/config"
+	"github.com/hawkaii/blogator/internal/database"
+
+	_ "github.com/lib/pq"
 )
+
+type state struct {
+	dbQueries *database.Queries
+	cfg       *config.Config
+}
 
 func main() {
 
@@ -14,16 +25,40 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(cfg.Db_Url)
-	fmt.Println(cfg.Current_User_Name)
-
-	cfg.SetUser("hawkaii")
-
-	cfg, err = config.Read()
+	db, err := sql.Open("postgres", cfg.Db_Url)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(cfg.Current_User_Name)
-	fmt.Println(cfg.Db_Url)
+
+	defer db.Close()
+	dbQueries := database.New(db)
+
+	programState := &state{
+		dbQueries: dbQueries,
+		cfg:       &cfg,
+	}
+
+	cmds := commands{
+		registeredCommands: make(map[string]func(*state, command) error),
+	}
+
+	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
+	cmds.register("reset", handlerReset)
+	cmds.register("users", handlerGetUsers)
+
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: cli <command> [args...]")
+		return
+
+	}
+
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
+
+	err = cmds.run(programState, command{Name: cmdName, Args: cmdArgs})
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 
 }
