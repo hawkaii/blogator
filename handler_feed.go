@@ -10,12 +10,7 @@ import (
 	"github.com/hawkaii/blogator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
-	user, err := s.dbQueries.GetUser(context.Background(), s.cfg.Current_User_Name)
-
-	if err != nil {
-		return err
-	}
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 
 	if len(cmd.Args) != 2 {
 		fmt.Printf("usage: %v <name> <url>", cmd.Name)

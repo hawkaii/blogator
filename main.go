@@ -47,10 +47,11 @@ func main() {
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerGetUsers)
 	cmds.register("agg", handler_agg)
-	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("addfeed", middleareLoggedIn(handlerAddFeed))
 	cmds.register("feeds", handlerGetFeeds)
 	cmds.register("follow", handlerFollow)
 	cmds.register("following", handlerFollowing)
+	cmds.register("unfollow", middleareLoggedIn(handlerUnfollow))
 
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: cli <command> [args...]")
