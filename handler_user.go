@@ -53,7 +53,8 @@ func handlerLogin(s *state, cmd command) error {
 
 	_, err := s.dbQueries.GetUser(context.Background(), name)
 	if err != nil {
-		return fmt.Errorf("couldn't find user: %w", err)
+		fmt.Print("couldn't find user: %w", err)
+		os.Exit(1)
 	}
 
 	err = s.cfg.SetUser(name)
