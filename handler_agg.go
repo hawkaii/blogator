@@ -7,6 +7,8 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"os"
+	"time"
 )
 
 func fetchFeed(ctx context.Context, url string) (*RSSFeed, error) {
@@ -50,24 +52,31 @@ func fetchFeed(ctx context.Context, url string) (*RSSFeed, error) {
 }
 
 func handler_agg(s *state, cmd command) error {
-	// if len(cmd.Args) != 1 {
-	// 	return fmt.Errorf("usage: %v <url>", cmd.Name)
-	// }
-	//
-	url := "https://www.wagslane.dev/index.xml"
+	if len(cmd.Args) != 1 {
+		fmt.Printf("usage: %v <url>", cmd.Name)
+		os.Exit(1)
+	}
 
-	feed, err := fetchFeed(context.Background(), url)
+	time_between_reqs_string := cmd.Args[0]
+	time_between_reqs, err := time.ParseDuration(time_between_reqs_string)
 	if err != nil {
-		return fmt.Errorf("couldn't fetch feed: %w", err)
+		fmt.Println("Invalid time duration")
+		os.Exit(1)
 	}
 
-	for _, item := range feed.Channel.Item {
-		fmt.Printf("%s\n", item.Title)
-		fmt.Printf("  %s\n", item.Link)
-		fmt.Printf("  %s\n", item.PubDate)
-		fmt.Printf("  %s\n", item.Description)
-		fmt.Println()
+	fmt.Println("Collecting feeds every", time_between_reqs)
+
+	ticker := time.NewTicker(time_between_reqs)
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
 	}
 
-	return nil
+}
+
+func printRSSItem(item RSSItem) {
+	fmt.Println("Title:", item.Title)
+	fmt.Println("Link:", item.Link)
+	fmt.Println("Description:", item.Description)
+	fmt.Println("PubDate:", item.PubDate)
+	fmt.Println()
 }
