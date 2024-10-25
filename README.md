@@ -7,7 +7,7 @@ A multi-player command line tool for aggregating RSS feeds and viewing the posts
 Make sure you have the latest [Go toolchain](https://golang.org/dl/) installed as well as a local Postgres database. You can then install `blogator` with:
 
 ```bash
-go install ...
+go install github.com/hawkaii/blogator
 ```
 
 ## Config
